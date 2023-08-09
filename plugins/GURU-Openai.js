@@ -1,16 +1,26 @@
 import fetch from 'node-fetch';
-import { ChatGpt } from '../lib/scraper.js';
+
 let handler = async (m, { text, usedPrefix, command }) => {
-    if (!text) throw `*Enter a request or an order to use ChatGpt*\n\n*Example*\n* ${usedPrefix + command} series 2022 Netflix*\n* ${usedPrefix + command} write a JS code*`;
-    try {
-      const systemMessage = 'Analyzing your request...';
-      const response = await ChatGpt(text, systemMessage);
-      m.reply(`${response.result}`.trim());
-    } catch (error) {
-      console.error(error);
-      throw `*ERROR*`;
-    }
-  };
+  
+  if (!text && !(m.quoted && m.quoted.text)) {
+    throw `Please provide some text or quote a message to get a response.`;
+  }
+
+ 
+  if (!text && m.quoted && m.quoted.text) {
+    text = m.quoted.text;
+  }
+
+  try {
+    const response = await fetch(`https://guru-gpt4-prod-gpt4-reverse-o8hyfh.mo1.mogenius.io/api/gpt4?query=${encodeURIComponent(text)}`);
+    const data = await response.json();
+    const { response: result } = data; 
+    m.reply(result.trim()); 
+  } catch (error) {
+    console.error('Error:', error); 
+    throw `*ERROR*`;
+  }
+};
 
 handler.command = ['bro', 'chatgpt', 'ai', 'siri'];
 handler.diamond = false;
